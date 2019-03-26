@@ -60,20 +60,18 @@ extension BigUInt {
             c = 0
             index -= 1
         }
-        var word: Word = 0
-        data.enumerateBytes { p, byteIndex, stop in
-            for byte in p {
-                word <<= 8
-                word += Word(byte)
-                c += 1
-                if c == bytesPerDigit {
-                    self[index] = word
-                    index -= 1
-                    c = 0
-                    word = 0
-                }
-            }
-        }
+		var word: Word = 0
+		data.lazy.enumerated().forEach { byteIndex, byte in
+			word <<= 8
+			word += Word(byte)
+			c += 1
+			if c == bytesPerDigit {
+				self[index] = word
+				index -= 1
+				c = 0
+				word = 0
+			}
+		}
         assert(c == 0 && word == 0 && index == -1)
     }
 
@@ -87,7 +85,7 @@ extension BigUInt {
         guard byteCount > 0 else { return Data() }
 
         var data = Data(count: byteCount)
-        data.withUnsafeMutableBytes { (p: UnsafeMutablePointer<UInt8>) -> Void in
+        data.withUnsafeMutableBytes { (p: UnsafeMutableRawBufferPointer) -> Void in
             var i = byteCount - 1
             for var word in self.words {
                 for _ in 0 ..< Word.bitWidth / 8 {
